@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using backend.Models.DbSet;
 
 public class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
@@ -9,4 +10,5 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         
     }
+    public DbSet<Product> Products { get; set; }
 }
