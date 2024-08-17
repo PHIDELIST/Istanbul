@@ -8,11 +8,12 @@ namespace backend.Profiles
     {
         public ProductProfile()
         {
-            CreateMap<Product, GetProducts>()
+            CreateMap<Product, GetProduct>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price));
+
         }
     }
 }

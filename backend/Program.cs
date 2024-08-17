@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using backend.Profiles;
+using backend.Services.ProductService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
+builder.Services.AddControllers();
+builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
 
 // Enable Swagger and Swagger UI
@@ -57,8 +63,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapIdentityApi<IdentityUser>();
-
-app.MapGet("/users", () => "Hello World!").RequireAuthorization();
+app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapGet("/healthcheck", () => "Healthy");
 
 
 app.Run();
