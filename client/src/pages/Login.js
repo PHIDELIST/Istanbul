@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Link, useHistory } from "react-router-dom";
+import axios from "axios";
 
 export default function Login() {
     const history = useHistory();
@@ -9,36 +10,33 @@ export default function Login() {
     const [loginSuccess, setLoginSuccess] = useState("");
 
     const initialValues = {
-        username: "",
+        email: "",
         password: "",
     };
 
     const validationSchema = Yup.object().shape({
-        username: Yup.string().required("Required"),
+        email: Yup.string().email("Invalid email format").required("Required"),
         password: Yup.string().required("Required"),
     });
 
     const onSubmit = async (values, { setSubmitting, setErrors }) => {
-        const { username, password } = values;
+        const { email, password } = values;
 
         try {
-            const response = await fetch("/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
+            const response = await axios.post("http://localhost:5055/login", 
+                { email, password },
+                { headers: { "Content-Type": "application/json" } }
+            );
+            localStorage.setItem("token", response.data.accessToken);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Login failed");
+            if (response.status === 200) {
+                setLoginSuccess("Login successful!");
+                setTimeout(() => history.push("/"), 1000);
             }
-
-            setLoginSuccess("Login successful!");
-            setTimeout(() => history.push("/"), 1000);
         } catch (error) {
             console.error("Error during login:", error);
-            setErrors({ server: error.message });
-            setLoginError(error.message);
+            setErrors({ server: error.response?.data?.error || "Login failed" });
+            setLoginError(error.response?.data?.error || "Login failed");
         }
 
         setSubmitting(false);
@@ -81,13 +79,13 @@ export default function Login() {
                         {({ isSubmitting }) => (
                             <Form className="mt-5">
                                 <Field
-                                    name="username"
-                                    type="text"
-                                    placeholder="Username"
+                                    name="email"
+                                    type="email"
+                                    placeholder="Email"
                                     className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400"
                                 />
                                 <ErrorMessage
-                                    name="username"
+                                    name="email"
                                     component="div"
                                     className="text-red-500 text-xs mt-1"
                                 />

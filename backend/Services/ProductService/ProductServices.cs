@@ -31,7 +31,7 @@ namespace backend.Services.ProductService
             return response;
         }
 
-        public async Task<GetProduct> GetProductAsync(int productId)
+        public async Task<GetProduct> GetProductAsync(long productId)
         {
             var dbProduct = await _context.Products.FindAsync(productId);
             return _mapper.Map<GetProduct>(dbProduct);

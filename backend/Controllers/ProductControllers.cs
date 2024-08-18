@@ -8,7 +8,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    // [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -26,7 +26,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("{productId}")]
-        public async Task<ActionResult<GetProduct>> GetProduct(int productId)
+        public async Task<ActionResult<GetProduct>> GetProduct(long productId)
         {
             var result = await _productService.GetProductAsync(productId);
 

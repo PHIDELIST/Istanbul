@@ -45,12 +45,23 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        builder => builder
+            .WithOrigins("*") // Your frontend URL
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
+// Add UseCors before UseAuthorization
+
 
 builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
 builder.Services.AddControllers();
 builder.Services.AddScoped<IProductService, ProductService>();
 var app = builder.Build();
-
+app.UseCors("AllowSpecificOrigins");
 // Enable Swagger and Swagger UI
 if (app.Environment.IsDevelopment())
 {

@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5555",
+  "proxy": "http://localhost:5055",
   "dependencies": {
     "@headlessui/react": "^1.7.19",
     "@heroicons/react": "^2.1.5",
@@ -13,6 +13,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.4.17",
+    "axios": "^1.7.4",
     "formik": "^2.4.6",
     "postcss": "^8.4.33",
     "react": "^18.2.0",

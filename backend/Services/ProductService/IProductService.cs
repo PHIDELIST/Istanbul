@@ -7,6 +7,6 @@ namespace backend.Services.ProductService
     public interface IProductService
     {
         Task<GetProducts> GetProductsAsync();
-        Task<GetProduct> GetProductAsync(int productId);
+        Task<GetProduct> GetProductAsync(long productId);
     }
 }

@@ -12,6 +12,7 @@ import { CartWrapper } from "./components/CartContext";
 import DeleteUser from "./pages/DeleteUser";
 import UpdatePassword from "./pages/UpdatePassword";
 import Contact from "./pages/Contact";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
     return (
@@ -21,7 +22,7 @@ function App() {
                 <Switch>
                     <Route exact path="/" component={Home} />
                     <Route path="/about" component={About} />
-                    <Route path="/checkout" component={Checkout} />
+                    <ProtectedRoute path="/checkout" component={Checkout} />
                     <Route path="/login" component={Login} />
                     <Route path="/signup" component={Signup} />
                     <Route path="/deleteuser" component={DeleteUser} />

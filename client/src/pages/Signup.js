@@ -2,54 +2,42 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Link, useHistory } from "react-router-dom";
+import axios from "axios";
 
 export default function Signup() {
     const history = useHistory();
     const [signupSuccess, setSignupSuccess] = useState("");
     const [signupError, setSignupError] = useState("");
+
     const initialValues = {
         email: "",
-        username: "",
         password: "",
-        confirmPassword: "",
     };
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email("Invalid email").required("Required"),
-        username: Yup.string().required("Required"),
-        password: Yup.string()
-            .min(6, "Password must be at least 6 characters")
-            .required("Required"),
-        confirmPassword: Yup.string()
-            .oneOf([Yup.ref("password"), null], "Passwords must match")
-            .required("Required"),
+        password: Yup.string().min(6, "Password must be at least 6 characters").required("Required"),
     });
 
     const onSubmit = async (values, { setSubmitting }) => {
-        const { username, email, password } = values;
+        const { email, password } = values;
         const userData = {
-            username,
             email,
             password,
         };
 
         try {
-            const response = await fetch("/users", {
-                method: "POST",
+            const response = await axios.post("http://localhost:5055/register", userData, {
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(userData),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Signup failed");
+            if (response.status === 200) {
+                setSignupSuccess("Sign up successful!");
+                setTimeout(() => history.push("/login"), 1000);
             }
-
-            setSignupSuccess("Sign up successful!");
-            setTimeout(() => history.push("/"), 1000);
         } catch (error) {
             console.error("Error during signup:", error);
-            setSignupError(error.message);
+            setSignupError(error.response?.data?.error || "Signup failed");
         }
 
         setSubmitting(false);
@@ -61,7 +49,7 @@ export default function Signup() {
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
                     <span className="block sm:inline">{signupSuccess}</span>
                 </div>
-            )}{" "}
+            )}
             {signupError && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                     <span className="block sm:inline">{signupError}</span>
@@ -92,18 +80,6 @@ export default function Signup() {
                         {({ isSubmitting }) => (
                             <Form className="mt-5">
                                 <Field
-                                    name="username"
-                                    type="text"
-                                    placeholder="Username"
-                                    className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400"
-                                />
-                                <ErrorMessage
-                                    name="username"
-                                    component="div"
-                                    className="text-red-500 text-xs mt-1"
-                                />
-
-                                <Field
                                     name="email"
                                     type="email"
                                     placeholder="Email"
@@ -123,18 +99,6 @@ export default function Signup() {
                                 />
                                 <ErrorMessage
                                     name="password"
-                                    component="div"
-                                    className="text-red-500 text-xs mt-1"
-                                />
-
-                                <Field
-                                    name="confirmPassword"
-                                    type="password"
-                                    placeholder="Confirm Password"
-                                    className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400"
-                                />
-                                <ErrorMessage
-                                    name="confirmPassword"
                                     component="div"
                                     className="text-red-500 text-xs mt-1"
                                 />
