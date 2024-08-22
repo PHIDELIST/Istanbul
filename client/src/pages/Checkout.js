@@ -2,6 +2,8 @@ import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useCartContext } from "../components/CartContext";
+import { Link } from "react-router-dom";
+import PayPal from "../components/PayPal";
 
 const CheckoutSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Required"),
@@ -12,7 +14,6 @@ const CheckoutSchema = Yup.object().shape({
     state: Yup.string().required("Required"),
     zip: Yup.string().required("Required"),
 });
-
 const Checkout = () => {
     const { cartItems } = useCartContext();
 
@@ -53,9 +54,9 @@ const Checkout = () => {
                 ))}
                 <p className="text-xl font-bold">Total: ${calculateTotal()}</p>
             </div>
-
+            <PayPal />
             {/* Checkout Form */}
-            <Formik
+            {/* <Formik
                 initialValues={{
                     email: "",
                     firstName: "",
@@ -107,7 +108,7 @@ const Checkout = () => {
                 {({ isSubmitting }) => (
                     <Form className="bg-white p-4 rounded-md shadow">
                         {/* Form fields */}
-                        <div className="grid gap-4 sm:grid-cols-2 mb-4">
+                        {/* <div className="grid gap-4 sm:grid-cols-2 mb-4">
                             <Field
                                 name="firstName"
                                 placeholder="First Name"
@@ -149,7 +150,7 @@ const Checkout = () => {
                         </div>
 
                         {/* Payment Information */}
-                        <h2 className="text-xl font-bold mb-4">
+                        {/* <h2 className="text-xl font-bold mb-4">
                             Payment Information
                         </h2>
                         <div className="w-full p-3">
@@ -173,7 +174,13 @@ const Checkout = () => {
                         </div>
 
                         {/* Submit button */}
-                        <button
+                        {/* <button
+                            onCl={   <Link
+                                to="/checkout-paypal"
+                                className="text-gray-600 hover:text-blue-500 dark:hover:text-blue-400"
+                            >
+                                Log In
+                            </Link>}
                             type="submit"
                             disabled={isSubmitting}
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -181,8 +188,10 @@ const Checkout = () => {
                             Pay Now
                         </button>
                     </Form>
-                )}
-            </Formik>
+                )} 
+            </Formik> */} 
+
+
         </div>
     );
 };

@@ -6,6 +6,7 @@ import NavbarMenu from "./components/NavbarMenu";
 import ViewProduct from "./pages/ViewProduct";
 import About from "./pages/About";
 import Checkout from "./pages/Checkout";
+import PayPal from "./components/PayPal"
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { CartWrapper } from "./components/CartContext";
@@ -13,16 +14,27 @@ import DeleteUser from "./pages/DeleteUser";
 import UpdatePassword from "./pages/UpdatePassword";
 import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+
+
+const initialOptions = {
+    "client-id": "test",
+    "currency": "USD",
+    "intent": "capture"
+};
 
 function App() {
     return (
+
         <CartWrapper>
+            <PayPalScriptProvider options={initialOptions}> 
             <Router>
                 <NavbarMenu />
                 <Switch>
                     <Route exact path="/" component={Home} />
                     <Route path="/about" component={About} />
                     <ProtectedRoute path="/checkout" component={Checkout} />
+                    <ProtectedRoute path="/checkout-paypal" component={PayPal} />
                     <Route path="/login" component={Login} />
                     <Route path="/signup" component={Signup} />
                     <Route path="/deleteuser" component={DeleteUser} />
@@ -32,6 +44,8 @@ function App() {
                 </Switch>
                 <Footer />
             </Router>
+
+            </PayPalScriptProvider>
         </CartWrapper>
     );
 }
