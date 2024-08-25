@@ -32,8 +32,9 @@ export default function Login() {
             });
 
             if (response.status === 200) {
-                const { token } = response.data;
+                const { token,profile } = response.data;
                 localStorage.setItem("token", token);
+                localStorage.setItem("profile", JSON.stringify(profile)); 
 
                 // Decode the token to get the role
                 const decodedToken = jwtDecode(token);

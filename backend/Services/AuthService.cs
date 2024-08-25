@@ -2,6 +2,7 @@
 using backend.Database.Entities;
 using backend.DTOs;
 using backend.Interfaces;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using BC = BCrypt.Net.BCrypt;
 
@@ -13,16 +14,19 @@ public class AuthService : IAuthService
     private readonly DatabaseContext _context;
     private readonly PasswordService _passwordService;
     private readonly TokenService _tokenService;
+    private readonly IMapper _mapper;
 
     public AuthService(
         DatabaseContext databaseContext,
         PasswordService passwordService,
-        IConfiguration config
+        IConfiguration config,
+        IMapper mapper
     )
     {
         _context = databaseContext;
         _passwordService = passwordService;
         _tokenService = new TokenService(config);
+        _mapper = mapper;
     }
 
 
@@ -78,4 +82,22 @@ public class AuthService : IAuthService
 
         return await roleQuery.FirstOrDefaultAsync() ?? null;
     }
+     public async Task<bool> UpdateUserProfile(int userId, UpdateProfileDto updateProfileDto)
+        {
+            var user = await _context.UserEntities.FirstOrDefaultAsync(u => u.Id== userId);
+
+            if (user == null)
+            {
+                return false; 
+            }
+
+            _mapper.Map(updateProfileDto, user);
+
+            user.UpdatedDtm = DateTime.UtcNow;
+
+            _context.UserEntities.Update(user);
+            await _context.SaveChangesAsync();
+
+            return true; 
+        }
 }
