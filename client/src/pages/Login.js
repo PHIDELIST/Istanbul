@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
     const history = useHistory();
     const [loginError, setLoginError] = useState("");
-    const [loginSuccess, setLoginSuccess] = useState("");
 
     const initialValues = {
         email: "",
@@ -15,27 +15,39 @@ export default function Login() {
     };
 
     const validationSchema = Yup.object().shape({
-        email: Yup.string().email("Invalid email format").required("Required"),
-        password: Yup.string().required("Required"),
+        email: Yup.string().email("Invalid email").required("Required"),
+        password: Yup.string().min(6, "Password must be at least 6 characters").required("Required"),
     });
 
-    const onSubmit = async (values, { setSubmitting, setErrors }) => {
+    const onSubmit = async (values, { setSubmitting }) => {
         const { email, password } = values;
+        const userData = {
+            email,
+            password,
+        };
 
         try {
-            const response = await axios.post("http://localhost:5066/auth/login", 
-                { email, password },
-                { headers: { "Content-Type": "application/json" } }
-            );
-            localStorage.setItem("token", response.data.token);
+            const response = await axios.post("http://localhost:5066/auth/login", userData, {
+                headers: { "Content-Type": "application/json" },
+            });
 
             if (response.status === 200) {
-                setLoginSuccess("Login successful!");
-                setTimeout(() => history.push("/"), 1000);
+                const { token } = response.data;
+                localStorage.setItem("token", token);
+
+                // Decode the token to get the role
+                const decodedToken = jwtDecode(token);
+                const userRole = decodedToken.role;
+
+                // Redirect based on role
+                if (userRole === "admin") {
+                    history.push("/admin");
+                } else {
+                    history.push("/");
+                }
             }
         } catch (error) {
             console.error("Error during login:", error);
-            setErrors({ server: error.response?.data?.error || "Login failed" });
             setLoginError(error.response?.data?.error || "Login failed");
         }
 
@@ -48,27 +60,13 @@ export default function Login() {
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                     <span className="block sm:inline">{loginError}</span>
                 </div>
-            )}{" "}
-            {loginSuccess && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                    <span className="block sm:inline">{loginSuccess}</span>
-                </div>
-            )}{" "}
+            )}
             <div className="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
                 <div className="p-4 sm:p-7">
                     <div className="text-center">
                         <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
-                            Login
+                            Log in
                         </h1>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            Don't have an account?{" "}
-                            <Link
-                                to="/signup"
-                                className="text-blue-600 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            >
-                                Sign up here
-                            </Link>
-                        </p>
                     </div>
 
                     <Formik
@@ -107,7 +105,7 @@ export default function Login() {
                                     disabled={isSubmitting}
                                     className="w-full py-3 px-4 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-gray-600"
                                 >
-                                    Login
+                                    Log in
                                 </button>
                             </Form>
                         )}

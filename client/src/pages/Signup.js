@@ -11,19 +11,30 @@ export default function Signup() {
 
     const initialValues = {
         email: "",
+        firstName: "",
+        lastName: "",
         password: "",
+        confirmPassword: "",
     };
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email("Invalid email").required("Required"),
+        firstName: Yup.string().required("Required"),
+        lastName: Yup.string().required("Required"),
         password: Yup.string().min(6, "Password must be at least 6 characters").required("Required"),
+        confirmPassword: Yup.string()
+            .oneOf([Yup.ref('password'), null], "Passwords must match")
+            .required("Required"),
     });
 
     const onSubmit = async (values, { setSubmitting }) => {
-        const { email, password } = values;
+        const { email, firstName, lastName, password, confirmPassword } = values;
         const userData = {
             email,
+            firstName,
+            lastName,
             password,
+            confirmPassword
         };
 
         try {
@@ -92,6 +103,30 @@ export default function Signup() {
                                 />
 
                                 <Field
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="First Name"
+                                    className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400"
+                                />
+                                <ErrorMessage
+                                    name="firstName"
+                                    component="div"
+                                    className="text-red-500 text-xs mt-1"
+                                />
+
+                                <Field
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="Last Name"
+                                    className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400"
+                                />
+                                <ErrorMessage
+                                    name="lastName"
+                                    component="div"
+                                    className="text-red-500 text-xs mt-1"
+                                />
+
+                                <Field
                                     name="password"
                                     type="password"
                                     placeholder="Password"
@@ -99,6 +134,18 @@ export default function Signup() {
                                 />
                                 <ErrorMessage
                                     name="password"
+                                    component="div"
+                                    className="text-red-500 text-xs mt-1"
+                                />
+
+                                <Field
+                                    name="confirmPassword"
+                                    type="password"
+                                    placeholder="Confirm Password"
+                                    className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400"
+                                />
+                                <ErrorMessage
+                                    name="confirmPassword"
                                     component="div"
                                     className="text-red-500 text-xs mt-1"
                                 />

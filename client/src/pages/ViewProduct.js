@@ -13,7 +13,7 @@ export default function ViewProduct() {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await axios.get(`http://localhost:5055/api/Products/${id}`);
+                const response = await axios.get(`http://localhost:5066/api/Products/${id}`);
                 setProduct(response.data);
             } catch (error) {
                 console.error("Error fetching product:", error);
