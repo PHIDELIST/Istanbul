@@ -40,7 +40,7 @@ export default function ViewProduct() {
             <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:grid lg:grid-cols-3 lg:gap-x-8 lg:px-8">
                 <div className="lg:col-span-1 flex justify-center lg:justify-start">
                     <img
-                        src={`../assets/img/${product.imageSrc}.jpg`} 
+                        src={`../../../assets/img/${product.imageSrc}.jpg`} 
                         alt={product.imageAlt}
                         className="rounded-lg shadow-md w-full lg:w-auto h-auto"
                     />

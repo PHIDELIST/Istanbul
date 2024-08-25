@@ -23,11 +23,11 @@ export default function Login() {
         const { email, password } = values;
 
         try {
-            const response = await axios.post("http://localhost:5055/login", 
+            const response = await axios.post("http://localhost:5066/auth/login", 
                 { email, password },
                 { headers: { "Content-Type": "application/json" } }
             );
-            localStorage.setItem("token", response.data.accessToken);
+            localStorage.setItem("token", response.data.token);
 
             if (response.status === 200) {
                 setLoginSuccess("Login successful!");

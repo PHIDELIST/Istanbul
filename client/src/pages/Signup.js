@@ -27,7 +27,7 @@ export default function Signup() {
         };
 
         try {
-            const response = await axios.post("http://localhost:5055/register", userData, {
+            const response = await axios.post("http://localhost:5066/auth/register", userData, {
                 headers: { "Content-Type": "application/json" },
             });
 

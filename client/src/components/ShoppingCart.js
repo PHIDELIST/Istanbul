@@ -82,7 +82,7 @@ export default function ShoppingCart({ open, setOpen }) {
                                                                 >
                                                                     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                                                         <img
-                                                                            src={`/assets/${product.image_url}`}
+                                                                            src={`/../../assets/${product.image_url}`}
                                                                             alt={
                                                                                 product.name
                                                                             }

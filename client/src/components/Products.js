@@ -15,9 +15,13 @@ import image9 from "../assets/img/image9.jpg";
 
 export default function Products() {
     const [products, setProducts] = useState([]);
-
+    const token = Boolean(localStorage.getItem("token")); 
     useEffect(() => {
-        axios.get("http://localhost:5055/api/Products")
+        axios.get("http://localhost:5055/api/Products", {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
             .then(response => {
                 const data = response.data.products; 
                 if (Array.isArray(data)) {
