@@ -4,7 +4,8 @@ import CardStats from "../Cards/CardStats.js";
 
 export default function HeaderStats() {
   const [productCount, setProductCount] = useState("Loading...");
-  const token = localStorage.getItem("token"); // Retrieve token from localStorage
+  const [orderCount, setOrderCount] = useState("Loading...");
+  const token = localStorage.getItem("token"); 
 
   useEffect(() => {
     const fetchProductCount = async () => {
@@ -21,7 +22,22 @@ export default function HeaderStats() {
       }
     };
 
+    const fetchOrderCount = async () => {
+      try {
+        const response = await axios.get("http://localhost:5066/api/Order/all-orders", {
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+          },
+        });
+        setOrderCount(response.data.count); 
+      } catch (error) {
+        console.error("Error fetching order count:", error);
+        setOrderCount("Error");
+      }
+    };
+
     fetchProductCount();
+    fetchOrderCount();
   }, [token]); 
 
   return (
@@ -35,7 +51,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="Orders"
-                  statTitle={productCount}
+                  statTitle={orderCount} 
                   statArrow="up"
                   statPercent="3.48"
                   statPercentColor="text-emerald-500"

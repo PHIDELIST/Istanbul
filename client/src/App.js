@@ -6,7 +6,7 @@ import NavbarMenu from "./components/NavbarMenu";
 import ViewProduct from "./pages/ViewProduct";
 import About from "./pages/About";
 import Checkout from "./pages/Checkout";
-import PayPal from "./components/PayPal";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { CartWrapper } from "./components/CartContext";
@@ -36,7 +36,6 @@ function App() {
                                 <Route exact path="/" component={Home} />
                                 <Route path="/about" component={About} />
                                 <ProtectedRoute path="/checkout" component={Checkout} allowedRoles={["admin","user"]} />
-                                <ProtectedRoute path="/checkout-paypal" component={PayPal} allowedRoles={[ "user","admin"]} />
                                 <Route path="/login" component={Login} />
                                 <Route path="/signup" component={Signup} />
                                 <ProtectedRoute path="/deleteuser" component={DeleteUser} allowedRoles={["user", "admin"]} />

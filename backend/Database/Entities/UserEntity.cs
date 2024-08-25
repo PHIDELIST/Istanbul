@@ -29,4 +29,5 @@ public sealed class UserEntity
     public byte[] RowVersion { get; set; }
 
     public RoleEntity RoleEntity { get; set; }
+    public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>(); 
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 
-export default function CardTable({ color }) {
+export default function CardProductTable({ color }) {
   const [products, setProducts] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -308,6 +308,6 @@ export default function CardTable({ color }) {
   );
 }
 
-CardTable.propTypes = {
+CardProductTable.propTypes = {
   color: PropTypes.string
 };

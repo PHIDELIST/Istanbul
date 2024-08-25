@@ -8,11 +8,15 @@ export const CartWrapper = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
 
     const removeFromCart = (productId) => {
-        setCartItems(cartItems.filter((item) => item.id !== productId));
+        setCartItems((currentItems) => {
+            console.log(`Removing item with id: ${productId}`);
+            return currentItems.filter((item) => item.id !== productId);
+        });
     };
 
     const updateQuantity = (productId, newQuantity) => {
         setCartItems((currentItems) => {
+            console.log(`Updating item with id: ${productId}, new quantity: ${newQuantity}`);
             return currentItems.map((item) => {
                 if (item.id === productId) {
                     return { ...item, quantity: newQuantity };
@@ -27,13 +31,16 @@ export const CartWrapper = ({ children }) => {
             const isProductInCart = currentItems.some(
                 (item) => item.id === product.id
             );
+
             if (isProductInCart) {
+                console.log(`Product ${product.id} already in cart, incrementing quantity`);
                 return currentItems.map((item) =>
                     item.id === product.id
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
             } else {
+                console.log(`Adding new product ${product.id} to cart`);
                 return [...currentItems, { ...product, quantity: 1 }];
             }
         });

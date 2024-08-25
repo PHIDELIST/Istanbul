@@ -1,26 +1,110 @@
 import React from "react";
-import { Formik, Form, Field } from "formik";
-import * as Yup from "yup";
 import { useCartContext } from "../components/CartContext";
-import { Link } from "react-router-dom";
-import PayPal from "../components/PayPal";
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
+import axios from "axios";
+import {jwtDecode} from 'jwt-decode';
 
-const CheckoutSchema = Yup.object().shape({
-    email: Yup.string().email("Invalid email").required("Required"),
-    firstName: Yup.string().required("Required"),
-    lastName: Yup.string().required("Required"),
-    address: Yup.string().required("Required"),
-    city: Yup.string().required("Required"),
-    state: Yup.string().required("Required"),
-    zip: Yup.string().required("Required"),
-});
 const Checkout = () => {
     const { cartItems } = useCartContext();
+    const [{ options, isPending }, dispatch] = usePayPalScriptReducer();
+    const [currency, setCurrency] = React.useState(options.currency || "USD");
+    const [error, setError] = React.useState(null);
+
+    const getAuthToken = () => {
+        return localStorage.getItem("token"); 
+    };
+
+    const getUserIdFromToken = () => {
+        const token = getAuthToken();
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                return decodedToken.Id; 
+            } catch (e) {
+                console.error("Error decoding token:", e);
+                return null;
+            }
+        }
+        return null;
+    };
 
     const calculateTotal = () => {
         return cartItems
             .reduce((total, item) => total + item.price * item.quantity, 0)
             .toFixed(2);
+    };
+
+    const onCurrencyChange = ({ target: { value } }) => {
+        setCurrency(value);
+        dispatch({
+            type: "resetOptions",
+            value: {
+                ...options,
+                currency: value,
+            },
+        });
+    };
+
+    const createOrderInBackend = async (orderData) => {
+        try {
+            const authToken = getAuthToken();
+            const response = await axios.post(
+                "http://localhost:5066/api/Order",
+                orderData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            setError("Failed to create order.");
+            console.error("Error creating order:", error);
+            throw error;
+        }
+    };
+
+    const onCreateOrder = (data, actions) => {
+        return actions.order.create({
+            purchase_units: [
+                {
+                    amount: {
+                        value: calculateTotal(),
+                    },
+                },
+            ],
+        });
+    };
+
+    const onApproveOrder = async (data, actions) => {
+        try {
+            const details = await actions.order.capture();
+            const name = details.payer.name.given_name;
+            alert(`Transaction completed by ${name}`);
+
+            const userId = getUserIdFromToken();
+            if (!userId) {
+                throw new Error("User not authenticated");
+            }
+
+            const orderData = {
+                orderDate: new Date().toISOString(),
+                userId: userId,
+                products: cartItems.map(item => ({
+                    productId: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+            };
+
+            await createOrderInBackend(orderData);
+            alert("Order placed successfully.");
+        } catch (error) {
+            setError("Failed to process payment.");
+            console.error("Error approving order:", error);
+            alert("Failed to process payment.");
+        }
     };
 
     return (
@@ -54,144 +138,27 @@ const Checkout = () => {
                 ))}
                 <p className="text-xl font-bold">Total: ${calculateTotal()}</p>
             </div>
-            <PayPal />
-            {/* Checkout Form */}
-            {/* <Formik
-                initialValues={{
-                    email: "",
-                    firstName: "",
-                    lastName: "",
-                    address: "",
-                    city: "",
-                    state: "",
-                    zip: "",
-                    cardName: "",
-                    cardNumber: "",
-                    expDate: "",
-                    cvv: "",
-                }}
-                validationSchema={CheckoutSchema}
-                onSubmit={async (values, actions) => {
-                    try {
-                        const orderDetails = cartItems.map((item) => ({
-                            product_id: item.id,
-                            quantity: item.quantity,
-                        }));
 
-                        const response = await fetch("/api/orders", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                // user_id: ,
-                                order_details: orderDetails,
-                            }),
-                        });
+            {/* Currency Selection */}
+            <div className="mb-4">
+                <select value={currency} onChange={onCurrencyChange} className="p-2 border rounded">
+                    <option value="USD">💵 USD</option>
+                    <option value="EUR">💶 Euro</option>
+                </select>
+            </div>
 
-                        if (!response.ok) {
-                            throw new Error("Network response was not ok.");
-                        }
-                        console.log("Order placed successfully!");
-                        actions.resetForm();
-                        window.location.href = "/order-confirmation";
-                    } catch (error) {
-                        console.error(
-                            "There was a problem with your fetch operation:",
-                            error
-                        );
-                    }
-
-                    actions.setSubmitting(false);
-                }}
-            >
-                {({ isSubmitting }) => (
-                    <Form className="bg-white p-4 rounded-md shadow">
-                        {/* Form fields */}
-                        {/* <div className="grid gap-4 sm:grid-cols-2 mb-4">
-                            <Field
-                                name="firstName"
-                                placeholder="First Name"
-                                className="p-2 border rounded"
-                            />
-                            <Field
-                                name="lastName"
-                                placeholder="Last Name"
-                                className="p-2 border rounded"
-                            />
-                        </div>
-                        <Field
-                            name="email"
-                            type="email"
-                            placeholder="Email"
-                            className="p-2 border rounded w-full mb-4"
-                        />
-                        <Field
-                            name="address"
-                            placeholder="Address"
-                            className="p-2 border rounded w-full mb-4"
-                        />
-                        <div className="grid gap-4 sm:grid-cols-3 mb-4">
-                            <Field
-                                name="city"
-                                placeholder="City"
-                                className="p-2 border rounded"
-                            />
-                            <Field
-                                name="state"
-                                placeholder="State"
-                                className="p-2 border rounded"
-                            />
-                            <Field
-                                name="zip"
-                                placeholder="ZIP / Postal Code"
-                                className="p-2 border rounded"
-                            />
-                        </div>
-
-                        {/* Payment Information */}
-                        {/* <h2 className="text-xl font-bold mb-4">
-                            Payment Information
-                        </h2>
-                        <div className="w-full p-3">
-                            <label
-                                htmlFor="type2"
-                                className="flex items-center cursor-pointer"
-                            >
-                                <input
-                                    type="radio"
-                                    className="form-radio h-5 w-5 text-indigo-500"
-                                    name="type"
-                                    id="type2"
-                                />
-                                <img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg"
-                                    width="80"
-                                    className="ml-3"
-                                    alt="PayPal"
-                                />
-                            </label>
-                        </div>
-
-                        {/* Submit button */}
-                        {/* <button
-                            onCl={   <Link
-                                to="/checkout-paypal"
-                                className="text-gray-600 hover:text-blue-500 dark:hover:text-blue-400"
-                            >
-                                Log In
-                            </Link>}
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                            Pay Now
-                        </button>
-                    </Form>
-                )} 
-            </Formik> */} 
-
-
+            {/* Payment Buttons */}
+            <div className="paypal">
+                {isPending ? (
+                    <p>LOADING...</p>
+                ) : (
+                    <PayPalButtons
+                        style={{ layout: "vertical" }}
+                        createOrder={(data, actions) => onCreateOrder(data, actions)}
+                        onApprove={(data, actions) => onApproveOrder(data, actions)}
+                    />
+                )}
+            </div>
         </div>
     );
 };
