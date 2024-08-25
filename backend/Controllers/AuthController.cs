@@ -1,11 +1,12 @@
 using backend.DTOs;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
 namespace backend.Controllers;
 
 [ApiController]
 [Route("/auth")]
+[AllowAnonymous]
 [Produces("application/json")]
 public class AuthController : ControllerBase
 {

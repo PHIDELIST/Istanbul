@@ -17,11 +17,13 @@ public class DatabaseContext : DbContext
     
     public virtual  DbSet<UserEntity> UserEntities { get; set; }
     public virtual  DbSet<RoleEntity> RoleEntities { get; set; }
+    public virtual  DbSet<ProductEntity> ProductEntities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new UserConfig());
         modelBuilder.ApplyConfiguration(new RoleConfig());
+        modelBuilder.ApplyConfiguration(new ProductConfig());
     }
 }
