@@ -3,7 +3,7 @@ namespace backend.DTOs
     public class CreateProductRequest
     {
         public string Name { get; set; }
-        public string ImageSrc { get; set; }
+        public IFormFile Image { get; set; }
         public string ImageAlt { get; set; }
         public string CategoryName { get; set; }
         public int Price { get; set; }
@@ -12,7 +12,7 @@ namespace backend.DTOs
     public class UpdateProductRequest
     {
         public string Name { get; set; }
-        public string ImageSrc { get; set; }
+        public IFormFile Image { get; set; }
         public string ImageAlt { get; set; }
         public string CategoryName { get; set; }
         public int Price { get; set; }
@@ -27,16 +27,18 @@ namespace backend.DTOs
     {
         public GetProduct Product { get; set; }
     }
+
     public class GetProducts
     {
         public List<GetProduct> Products { get; set; }
     }
+
     public class GetProduct
     {
         public long Id { get; set; }
         public string Name { get; set; }
-        public string ImageSrc {get;set;}
-        public string ImageAlt {get;set;}
+        public string ImageSrc { get; set; }
+        public string ImageAlt { get; set; }
         public string CategoryName { get; set; }
         public int Price { get; set; }
     }

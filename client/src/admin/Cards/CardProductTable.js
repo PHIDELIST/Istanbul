@@ -9,11 +9,12 @@ export default function CardProductTable({ color }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
-    imageSrc: "",
+    image: null,
     imageAlt: "",
     categoryName: "",
     price: 0
   });
+  const [selectedImage, setSelectedImage] = useState(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -52,14 +53,26 @@ export default function CardProductTable({ color }) {
     }
   };
 
-  const handleUpdateProduct = async (updatedProduct) => {
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
     try {
-      await axios.put(`http://localhost:5066/api/Products/${updatedProduct.id}`, updatedProduct, {
+      const formData = new FormData();
+      formData.append('name', editProduct.name);
+      formData.append('imageAlt', editProduct.imageAlt);
+      formData.append('categoryName', editProduct.categoryName);
+      formData.append('price', editProduct.price);
+      if (editProduct.image) {
+        formData.append('image', editProduct.image);
+      }
+
+      await axios.put(`http://localhost:5066/api/Products/${editProduct.id}`, formData, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
-      setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
+
+      setProducts(products.map(product => product.id === editProduct.id ? { ...product, ...editProduct } : product));
       setShowEditForm(false);
       setEditProduct(null);
       alert("Product updated successfully.");
@@ -69,22 +82,35 @@ export default function CardProductTable({ color }) {
     }
   };
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
     try {
-      await axios.post(`http://localhost:5066/api/Products`, newProduct, {
+      const formData = new FormData();
+      formData.append('name', newProduct.name);
+      formData.append('imageAlt', newProduct.imageAlt);
+      formData.append('categoryName', newProduct.categoryName);
+      formData.append('price', newProduct.price);
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
+      const response = await axios.post(`http://localhost:5066/api/Products`, formData, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
-      setProducts([...products, newProduct]);
+
+      setProducts([...products, response.data.product]);
       setShowAddForm(false);
       setNewProduct({
         name: "",
-        imageSrc: "",
+        image: null,
         imageAlt: "",
         categoryName: "",
         price: 0
       });
+      setSelectedImage(null);
       alert("Product added successfully.");
     } catch (error) {
       console.error("Error adding product:", error);
@@ -120,7 +146,7 @@ export default function CardProductTable({ color }) {
                 </th>
                 <td className="px-6 py-4">
                   <img
-                    src={product.imageSrc}
+                    src={`http://localhost:5066/${product.imageSrc}`}
                     alt={product.imageAlt}
                     className="h-12 w-12 bg-white rounded-full border"
                   />
@@ -155,86 +181,75 @@ export default function CardProductTable({ color }) {
             {showAddForm ? (
               <>
                 <h3 className="text-xl font-semibold mb-4">Add New Product</h3>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Product Name</label>
-                  <input
-                    type="text"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Image Source</label>
-                  <input
-                    type="text"
-                    value={newProduct.imageSrc}
-                    onChange={(e) => setNewProduct({ ...newProduct, imageSrc: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Image Alt Text</label>
-                  <input
-                    type="text"
-                    value={newProduct.imageAlt}
-                    onChange={(e) => setNewProduct({ ...newProduct, imageAlt: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <input
-                    type="text"
-                    value={newProduct.categoryName}
-                    onChange={(e) => setNewProduct({ ...newProduct, categoryName: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Price</label>
-                  <input
-                    type="number"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={handleAddProduct}
-                    className="inline-flex justify-center px-4 py-2 text-white bg-blue-500 border border-transparent rounded-md shadow-sm"
-                  >
-                    Add Product
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setNewProduct({
-                        name: "",
-                        imageSrc: "",
-                        imageAlt: "",
-                        categoryName: "",
-                        price: 0
-                      });
-                    }}
-                    className="inline-flex justify-center px-4 py-2 text-white bg-red-500 border border-transparent rounded-md shadow-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <form onSubmit={handleAddProduct}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Product Name</label>
+                    <input
+                      type="text"
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Image</label>
+                    <input
+                      type="file"
+                      onChange={(e) => {
+                        setNewProduct({ ...newProduct, image: e.target.files[0] });
+                        setSelectedImage(e.target.files[0]);
+                      }}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Image Alt Text</label>
+                    <input
+                      type="text"
+                      value={newProduct.imageAlt}
+                      onChange={(e) => setNewProduct({ ...newProduct, imageAlt: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Category</label>
+                    <input
+                      type="text"
+                      value={newProduct.categoryName}
+                      onChange={(e) => setNewProduct({ ...newProduct, categoryName: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">Price</label>
+                    <input
+                      type="number"
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddForm(false)}
+                      className="px-4 py-2 text-white bg-red-500 rounded-md"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-white bg-blue-500 rounded-md"
+                    >
+                      Add Product
+                    </button>
+                  </div>
+                </form>
               </>
-            ) : (
+            ) : showEditForm && (
               <>
                 <h3 className="text-xl font-semibold mb-4">Edit Product</h3>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleUpdateProduct(editProduct);
-                  }}
-                >
+                <form onSubmit={handleUpdateProduct}>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700">Product Name</label>
                     <input
@@ -245,13 +260,19 @@ export default function CardProductTable({ color }) {
                     />
                   </div>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Image Source</label>
+                    <label className="block text-sm font-medium text-gray-700">Image</label>
                     <input
-                      type="text"
-                      value={editProduct.imageSrc}
-                      onChange={(e) => setEditProduct({ ...editProduct, imageSrc: e.target.value })}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
+                      type="file"
+                      onChange={(e) => setEditProduct({ ...editProduct, image: e.target.files[0] })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
                     />
+                    {editProduct.imageSrc && (
+                      <img
+                        src={editProduct.imageSrc}
+                        alt={editProduct.imageAlt}
+                        className="mt-2 h-12 w-12 bg-white rounded-full border"
+                      />
+                    )}
                   </div>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700">Image Alt Text</label>
@@ -276,26 +297,23 @@ export default function CardProductTable({ color }) {
                     <input
                       type="number"
                       value={editProduct.price}
-                      onChange={(e) => setEditProduct({ ...editProduct, price: Number(e.target.value) })}
+                      onChange={(e) => setEditProduct({ ...editProduct, price: parseFloat(e.target.value) })}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm text-black"
                     />
                   </div>
-                  <div className="flex gap-4">
-                    <button
-                      type="submit"
-                      className="inline-flex justify-center px-4 py-2 text-white bg-blue-500 border border-transparent rounded-md shadow-sm"
-                    >
-                      Save Changes
-                    </button>
+                  <div className="flex justify-end space-x-4">
                     <button
                       type="button"
-                      onClick={() => {
-                        setShowEditForm(false);
-                        setEditProduct(null);
-                      }}
-                      className="inline-flex justify-center px-4 py-2 text-white bg-red-500 border border-transparent rounded-md shadow-sm"
+                      onClick={() => setShowEditForm(false)}
+                      className="px-4 py-2 text-white bg-red-500 rounded-md"
                     >
                       Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-white bg-blue-500 rounded-md"
+                    >
+                      Update Product
                     </button>
                   </div>
                 </form>
@@ -309,5 +327,5 @@ export default function CardProductTable({ color }) {
 }
 
 CardProductTable.propTypes = {
-  color: PropTypes.string
+  color: PropTypes.string,
 };

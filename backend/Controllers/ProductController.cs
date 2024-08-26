@@ -4,6 +4,7 @@ using backend.Services;
 using backend.DTOs;
 using backend.Interfaces;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace backend.Controllers
 {
@@ -34,24 +35,26 @@ namespace backend.Controllers
 
             if (result == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             return Ok(result);
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")] 
-        public async Task<ActionResult<CreateProductResponse>> CreateProduct([FromBody] CreateProductRequest request)
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<CreateProductResponse>> CreateProduct([FromForm] CreateProductRequest request, IFormFile image)
         {
+            request.Image = image; 
             var result = await _productService.CreateProductAsync(request);
             return CreatedAtAction(nameof(GetProduct), new { productId = result.Product.Id }, result);
         }
 
         [HttpPut("{productId}")]
-        [Authorize(Roles = "admin")] 
-        public async Task<IActionResult> UpdateProduct(long productId, [FromBody] UpdateProductRequest request)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> UpdateProduct(long productId, [FromForm] UpdateProductRequest request, IFormFile image)
         {
+            request.Image = image; 
             var result = await _productService.UpdateProductAsync(productId, request);
 
             if (result == null)
@@ -63,7 +66,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("{productId}")]
-        [Authorize(Roles = "admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteProduct(long productId)
         {
             var result = await _productService.DeleteProductAsync(productId);
@@ -77,7 +80,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("count")]
-        [Authorize(Roles = "admin")] 
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<int>> GetProductCount()
         {
             var count = await _productService.GetProductCountAsync();
