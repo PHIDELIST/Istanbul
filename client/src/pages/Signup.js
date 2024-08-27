@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
+import { backendUrl } from "../utils";
 
 export default function Signup() {
     const history = useHistory();
@@ -38,7 +39,7 @@ export default function Signup() {
         };
 
         try {
-            const response = await axios.post("http://localhost:5066/auth/register", userData, {
+            const response = await axios.post(`${backendUrl}/auth/register`, userData, {
                 headers: { "Content-Type": "application/json" },
             });
 

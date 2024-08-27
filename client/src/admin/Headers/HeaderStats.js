@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CardStats from "../Cards/CardStats.js";
+import { backendUrl } from "../../utils.js";
 
 export default function HeaderStats() {
   const [productCount, setProductCount] = useState("Loading...");
   const [orderCount, setOrderCount] = useState("Loading...");
-  const token = localStorage.getItem("token"); 
+  const [salesCount, setSalesCount] = useState("Loading...");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchProductCount = async () => {
       try {
-        const response = await axios.get("http://localhost:5066/api/Products/count", {
+        const response = await axios.get(`${backendUrl}/api/Products/count`, {
           headers: {
-            'Authorization': `Bearer ${token}`, 
+            'Authorization': `Bearer ${token}`,
           },
         });
-        setProductCount(response.data); 
+        setProductCount(response.data);
       } catch (error) {
         console.error("Error fetching product count:", error);
         setProductCount("Error");
@@ -24,21 +26,36 @@ export default function HeaderStats() {
 
     const fetchOrderCount = async () => {
       try {
-        const response = await axios.get("http://localhost:5066/api/Order/all-orders", {
+        const response = await axios.get(`${backendUrl}/api/Order/all-orders`, {
           headers: {
-            'Authorization': `Bearer ${token}`, 
+            'Authorization': `Bearer ${token}`,
           },
         });
-        setOrderCount(response.data.count); 
+        setOrderCount(response.data.count);
       } catch (error) {
         console.error("Error fetching order count:", error);
         setOrderCount("Error");
       }
     };
 
+    const fetchSalesCount = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/Order/sales`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        setSalesCount(response.data.totalSales);
+      } catch (error) {
+        console.error("Error fetching sales count:", error);
+        setSalesCount("Error");
+      }
+    };
+
     fetchProductCount();
     fetchOrderCount();
-  }, [token]); 
+    fetchSalesCount();
+  }, [token]);
 
   return (
     <>
@@ -51,7 +68,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="Orders"
-                  statTitle={orderCount} 
+                  statTitle={orderCount}
                   statArrow="up"
                   statPercent="3.48"
                   statPercentColor="text-emerald-500"
@@ -75,7 +92,7 @@ export default function HeaderStats() {
               <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
                 <CardStats
                   statSubtitle="SALES"
-                  statTitle={productCount}
+                  statTitle={`$${salesCount}`} 
                   statArrow="down"
                   statPercent="1.10"
                   statPercentColor="text-orange-500"

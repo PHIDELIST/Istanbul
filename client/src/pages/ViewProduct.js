@@ -1,7 +1,8 @@
+import { backendUrl } from '../utils';
+import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { StarIcon } from "@heroicons/react/20/solid";
-import axios from "axios"; // Import axios
 import { useCartContext } from "../components/CartContext";
 
 export default function ViewProduct() {
@@ -13,7 +14,7 @@ export default function ViewProduct() {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await axios.get(`http://localhost:5066/api/Products/${id}`);
+                const response = await axios.get(`${backendUrl}/api/Products/${id}`);
                 setProduct(response.data);
             } catch (error) {
                 console.error("Error fetching product:", error);
@@ -40,7 +41,7 @@ export default function ViewProduct() {
             <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:grid lg:grid-cols-3 lg:gap-x-8 lg:px-8">
                 <div className="lg:col-span-1 flex justify-center lg:justify-start">
                     <img
-                        src={`../../../assets/img/${product.imageSrc}.jpg`} 
+                         src={`${backendUrl}/${product.imageSrc}`} 
                         alt={product.imageAlt}
                         className="rounded-lg shadow-md w-full lg:w-auto h-auto"
                     />

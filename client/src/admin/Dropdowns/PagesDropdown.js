@@ -52,14 +52,6 @@ const PagesDropdown = () => {
           Dashboard
         </Link>
         <Link
-          to="/admin/settings"
-          className={
-            "text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
-          }
-        >
-          Settings
-        </Link>
-        <Link
           to="/admin/tables"
           className={
             "text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
@@ -74,6 +66,14 @@ const PagesDropdown = () => {
           }
         >
           Orders
+        </Link>
+        <Link
+          to="/admin/settings"
+          className={
+            "text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
+          }
+        >
+          Settings
         </Link>
         <div className="h-0 mx-4 my-2 border border-solid border-blueGray-100" />
         <span

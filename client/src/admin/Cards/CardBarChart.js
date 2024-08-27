@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import {
   Chart,
   CategoryScale,
@@ -9,8 +10,8 @@ import {
   Legend,
   BarController,
 } from "chart.js";
+import { backendUrl } from '../../utils';
 
-// Register necessary components
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -21,42 +22,63 @@ Chart.register(
   BarController
 );
 
-export default function CardBarChart() {
-  const chartRef = React.useRef(null);
 
-  React.useEffect(() => {
+export default function CardBarChart() {
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const token = localStorage.getItem("token"); 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/Order/all-orders`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const orders = response.data.orders;
+        const orderDates = orders.map(order => new Date(order.orderDate).toLocaleDateString());
+        const orderCounts = orders.reduce((acc, order) => {
+          const date = new Date(order.orderDate).toLocaleDateString();
+          acc[date] = (acc[date] || 0) + 1;
+          return acc;
+        }, {});
+
+        const labels = Object.keys(orderCounts);
+        const data = labels.map(label => orderCounts[label]);
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: "Orders",
+              backgroundColor: "#ed64a6",
+              borderColor: "#ed64a6",
+              data,
+              barThickness: 8,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error fetching orders data:", error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
+  useEffect(() => {
     const ctx = document.getElementById("bar-chart")?.getContext("2d");
     if (!ctx) return;
 
-    // Destroy the previous chart instance if it exists
     if (chartRef.current) {
       chartRef.current.destroy();
     }
 
-    // Create new Chart instance
     chartRef.current = new Chart(ctx, {
       type: "bar",
-      data: {
-        labels: ["January", "February", "March", "April", "May", "June", "July"],
-        datasets: [
-          {
-            label: new Date().getFullYear(),
-            backgroundColor: "#ed64a6",
-            borderColor: "#ed64a6",
-            data: [30, 78, 56, 34, 100, 45, 13],
-            fill: false,
-            barThickness: 8,
-          },
-          {
-            label: new Date().getFullYear() - 1,
-            backgroundColor: "#4c51bf",
-            borderColor: "#4c51bf",
-            data: [27, 68, 86, 74, 10, 4, 87],
-            fill: false,
-            barThickness: 8,
-          },
-        ],
-      },
+      data: chartData,
       options: {
         maintainAspectRatio: false,
         responsive: true,
@@ -109,14 +131,13 @@ export default function CardBarChart() {
       },
     });
 
-    // Cleanup function to destroy chart instance on component unmount
     return () => {
       if (chartRef.current) {
         chartRef.current.destroy();
         chartRef.current = null;
       }
     };
-  }, []);
+  }, [chartData]);
 
   return (
     <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white">

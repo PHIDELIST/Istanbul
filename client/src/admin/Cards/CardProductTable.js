@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-
+import { backendUrl } from '../../utils';
 export default function CardProductTable({ color }) {
   const [products, setProducts] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
@@ -20,7 +20,7 @@ export default function CardProductTable({ color }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:5066/api/Products");
+        const response = await axios.get(`${backendUrl}/api/Products`);
         setProducts(response.data.products);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -39,7 +39,7 @@ export default function CardProductTable({ color }) {
     const confirmed = window.confirm("Are you sure you want to delete this product?");
     if (confirmed) {
       try {
-        await axios.delete(`http://localhost:5066/api/Products/${productId}`, {
+        await axios.delete(`${backendUrl}/api/Products/${productId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -65,7 +65,7 @@ export default function CardProductTable({ color }) {
         formData.append('image', editProduct.image);
       }
 
-      await axios.put(`http://localhost:5066/api/Products/${editProduct.id}`, formData, {
+      await axios.put(`${backendUrl}/api/Products/${editProduct.id}`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -94,7 +94,7 @@ export default function CardProductTable({ color }) {
         formData.append('image', selectedImage);
       }
 
-      const response = await axios.post(`http://localhost:5066/api/Products`, formData, {
+      const response = await axios.post(`${backendUrl}/api/Products`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -146,7 +146,7 @@ export default function CardProductTable({ color }) {
                 </th>
                 <td className="px-6 py-4">
                   <img
-                    src={`http://localhost:5066/${product.imageSrc}`}
+                    src={`${backendUrl}/${product.imageSrc}`}
                     alt={product.imageAlt}
                     className="h-12 w-12 bg-white rounded-full border"
                   />

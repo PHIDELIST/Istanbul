@@ -10,5 +10,7 @@ namespace backend.Interfaces
         Task<OrderDto> GetOrderByIdAsync(long orderId);
         Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(long userId);
         Task<OrdersWithCountResponse> GetAllOrdersAsync();  
+        Task<bool> MarkOrderAsDeliveredAsync(long orderId);  
+        Task<SalesResponse> GetSalesAsync();  
     }
 }

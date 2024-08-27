@@ -3,6 +3,7 @@ import { useCartContext } from "../components/CartContext";
 import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import axios from "axios";
 import {jwtDecode} from 'jwt-decode';
+import { backendUrl } from "../utils";
 
 const Checkout = () => {
     const { cartItems } = useCartContext();
@@ -49,7 +50,7 @@ const Checkout = () => {
         try {
             const authToken = getAuthToken();
             const response = await axios.post(
-                "http://localhost:5066/api/Order",
+                `${backendUrl}/api/Order`,
                 orderData,
                 {
                     headers: {

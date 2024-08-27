@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { backendUrl } from "../utils";
 
 export default function Products() {
     const [products, setProducts] = useState([]);
     const token = localStorage.getItem("token"); 
 
     useEffect(() => {
-        axios.get("http://localhost:5066/api/Products")
+        axios.get(`${backendUrl}/api/Products`)
             .then(response => {
                 const data = response.data.products; 
                 if (Array.isArray(data)) {
@@ -39,7 +40,7 @@ export default function Products() {
                         >
                             <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
                                 <img
-                                    src={`http://localhost:5066/${product.imageSrc}`} // Use the image URL from the backend
+                                    src={`${backendUrl}/${product.imageSrc}`} 
                                     alt={product.imageAlt}
                                     className="h-full w-full object-cover object-center group-hover:opacity-75"
                                 />

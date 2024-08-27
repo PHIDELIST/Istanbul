@@ -1,62 +1,79 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import {
   Chart,
   CategoryScale,
   LinearScale,
   LineElement,
-  PointElement,  // Import PointElement
+  PointElement,
   Title,
   Tooltip,
   Legend,
   LineController,
 } from "chart.js";
+import { backendUrl } from '../../utils';
 
-// Register necessary components
 Chart.register(
   CategoryScale,
   LinearScale,
   LineElement,
-  PointElement,  // Register PointElement
+  PointElement,
   Title,
   Tooltip,
   Legend,
   LineController
 );
 
-export default function CardLineChart() {
-  const chartRef = React.useRef(null);
 
-  React.useEffect(() => {
+
+export default function CardLineChart() {
+  const chartRef = useRef(null);
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const token = localStorage.getItem("token"); 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/Order/sales`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const sales = response.data.sales;
+        const labels = sales.map(order => new Date(order.orderDate).toLocaleDateString());
+        const data = sales.map(order => order.products.reduce((acc, product) => acc + (product.quantity * product.price), 0));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: `Sales for ${new Date().getFullYear()}`,
+              backgroundColor: "#4c51bf",
+              borderColor: "#4c51bf",
+              data,
+              fill: false,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error fetching sales data:", error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
+  useEffect(() => {
     const ctx = document.getElementById("line-chart")?.getContext("2d");
     if (!ctx) return;
 
-    // Destroy the previous chart instance if it exists
     if (chartRef.current) {
       chartRef.current.destroy();
     }
-
-    // Create new Chart instance
     chartRef.current = new Chart(ctx, {
       type: "line",
-      data: {
-        labels: ["January", "February", "March", "April", "May", "June", "July"],
-        datasets: [
-          {
-            label: new Date().getFullYear(),
-            backgroundColor: "#4c51bf",
-            borderColor: "#4c51bf",
-            data: [65, 78, 66, 44, 56, 67, 75],
-            fill: false,
-          },
-          {
-            label: new Date().getFullYear() - 1,
-            backgroundColor: "#fff",
-            borderColor: "#fff",
-            data: [40, 68, 86, 74, 56, 60, 87],
-            fill: false,
-          },
-        ],
-      },
+      data: chartData,
       options: {
         maintainAspectRatio: false,
         responsive: true,
@@ -110,14 +127,14 @@ export default function CardLineChart() {
       },
     });
 
-    // Cleanup function to destroy chart instance on component unmount
+  
     return () => {
       if (chartRef.current) {
         chartRef.current.destroy();
         chartRef.current = null;
       }
     };
-  }, []);
+  }, [chartData]);
 
   return (
     <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-blueGray-700">

@@ -25,7 +25,7 @@ namespace backend.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateOrder([FromBody] OrderDto orderDto)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirstValue("id");
             if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out var userId))
             {
                 return BadRequest(new { message = "Invalid user" });
@@ -41,7 +41,7 @@ namespace backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetOrderById(long id)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirstValue("id");
             if (string.IsNullOrEmpty(userIdClaim) || !long.TryParse(userIdClaim, out var userId))
             {
                 return BadRequest(new { message = "Invalid user" });
@@ -83,6 +83,34 @@ namespace backend.Controllers
             {
                 Orders = ordersWithCount.Orders,
                 Count = ordersWithCount.OrderCount
+            });
+        }
+
+        [HttpPost("{id}/deliver")]
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> MarkOrderAsDelivered(long id)
+        {
+            var success = await _orderService.MarkOrderAsDeliveredAsync(id);
+            if (!success)
+            {
+                return NotFound(new { message = "Order not found" });
+            }
+
+            return Ok(new { message = "Order marked as delivered" });
+        }
+
+        [HttpGet("sales")]
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSales()
+        {
+            var salesResponse = await _orderService.GetSalesAsync();
+            return Ok(new
+            {
+                Sales = salesResponse.Sales,
+                TotalSales = salesResponse.TotalSales
             });
         }
 

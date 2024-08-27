@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { backendUrl } from "../../utils";
 
 export default function CardProfile() {
   const [profile, setProfile] = useState(null);
@@ -15,7 +16,7 @@ export default function CardProfile() {
       try {
         const token = localStorage.getItem("token");
         await axios.put(
-          "http://localhost:5066/auth/update-profile",
+          `${backendUrl}/auth/update-profile`,
           profile,
           {
             headers: { Authorization: `Bearer ${token}` },
