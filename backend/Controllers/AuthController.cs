@@ -84,7 +84,6 @@ public class AuthController : ControllerBase
 
         var token = _tokenService.CreateToken(userExists, roleName?.RoleName);
 
-        // Return user profile along with token
         var userProfile = new
         {
             userExists.FirstName,
@@ -108,7 +107,6 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateProfileAsync([FromBody] UpdateProfileDto updateProfileDto)
     {
-        // Extract user ID from the claims
         var userIdClaim = User.FindFirstValue("id");
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
@@ -123,6 +121,34 @@ public class AuthController : ControllerBase
         }
 
         return Ok(updatedUser);
+    }
+    /// <summary>
+    /// Gets the profile of the currently authenticated user.
+    /// </summary>
+    /// <returns>Returns the user profile</returns>
+    /// <response code="200">Returns the user profile</response>
+    /// <response code="404">If user does not exist</response>
+    [HttpGet]
+    [Route("profile")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetProfileAsync()
+    {
+        var userIdClaim = User.FindFirstValue("id");
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return NotFound(new { message = "claim not found" });
+        }
+
+        var userProfile = await _authService.GetUserProfile(userId);
+
+        if (userProfile == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        return Ok(userProfile);
     }
 
 }

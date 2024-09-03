@@ -33,7 +33,6 @@ export default function Products() {
             });
     }, []);
 
-    console.log(products);
 
     // Create a map for image sources
     const imageMap = {

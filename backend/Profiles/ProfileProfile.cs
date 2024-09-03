@@ -10,6 +10,8 @@ namespace backend.Profiles
         {
             CreateMap<UpdateProfileDto, UserEntity>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<UserEntity, GetUserProfileDto>()
+                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

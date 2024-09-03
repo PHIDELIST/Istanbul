@@ -100,4 +100,16 @@ public class AuthService : IAuthService
 
             return true; 
         }
+        public async Task<GetUserProfileDto?> GetUserProfile(int userId)
+    {
+        var user = await _context.UserEntities
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return null;
+        }
+
+        return _mapper.Map<GetUserProfileDto>(user);
+    }
 }
