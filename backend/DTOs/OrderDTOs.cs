@@ -8,6 +8,8 @@ namespace backend.DTOs
         public long OrderId { get; set; }
         public DateTime OrderDate { get; set; }
         public long UserId { get; set; }
+        public string UserFirstName { get; set; }
+        public bool Delivered { get; set; }
         public List<OrderProductDto> Products { get; set; }
     }
 
@@ -15,6 +17,7 @@ namespace backend.DTOs
     {
         public long OrderProductId { get; set; }
         public long ProductId { get; set; }
+         public string ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
     }
@@ -51,5 +54,10 @@ namespace backend.DTOs
     {
         public int OrderCount { get; set; }
         public List<OrderDto> Orders { get; set; }
+    }
+     public class SalesResponse
+    {
+        public IEnumerable<OrderDto> Sales { get; set; }
+        public decimal TotalSales { get; set; }
     }
 }

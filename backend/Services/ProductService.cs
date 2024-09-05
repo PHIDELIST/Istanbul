@@ -6,6 +6,7 @@ using backend.Database.Entities;
 using backend.DTOs;
 using backend.Interfaces;
 using AutoMapper;
+using System.IO;
 
 namespace backend.Services
 {
@@ -45,6 +46,14 @@ namespace backend.Services
             _context.ProductEntities.Add(productEntity);
             await _context.SaveChangesAsync();
 
+            if (request.Image != null)
+            {
+                var imagePath = await UploadImageAsync(productEntity.Id, request.Name, request.Image);
+                productEntity.ImageSrc = imagePath;
+                _context.ProductEntities.Update(productEntity);
+                await _context.SaveChangesAsync();
+            }
+
             var response = new CreateProductResponse
             {
                 Product = _mapper.Map<GetProduct>(productEntity)
@@ -58,10 +67,17 @@ namespace backend.Services
             var productEntity = await _context.ProductEntities.FindAsync(productId);
             if (productEntity == null)
             {
-                return null; 
+                return null;
             }
 
             _mapper.Map(request, productEntity);
+
+            if (request.Image != null)
+            {
+                var imagePath = await UploadImageAsync(productEntity.Id, request.Name, request.Image);
+                productEntity.ImageSrc = imagePath;
+            }
+
             _context.ProductEntities.Update(productEntity);
             await _context.SaveChangesAsync();
 
@@ -78,7 +94,7 @@ namespace backend.Services
             var productEntity = await _context.ProductEntities.FindAsync(productId);
             if (productEntity == null)
             {
-                return false; // Or throw an exception if preferred
+                return false;
             }
 
             _context.ProductEntities.Remove(productEntity);
@@ -90,5 +106,31 @@ namespace backend.Services
         {
             return await _context.ProductEntities.CountAsync();
         }
+
+        private async Task<string> UploadImageAsync(long productId, string productName, IFormFile image)
+{
+    try
+    {
+        var imageName = $"{productId}_{productName}.jpg";
+        var basePath = Path.Combine("uploads", "images");
+        var imagePath = Path.Combine(basePath, imageName);
+
+        if (!Directory.Exists(basePath))
+        {
+            Directory.CreateDirectory(basePath);
+        }
+
+        using (var stream = new FileStream(imagePath, FileMode.Create))
+        {
+            await image.CopyToAsync(stream);
+        }
+        return imagePath;
+    }
+    catch (Exception ex)
+    {
+        throw new ApplicationException("Error uploading image", ex);
+    }
+}
+
     }
 }

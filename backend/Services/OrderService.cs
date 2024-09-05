@@ -37,7 +37,26 @@ namespace backend.Services
                 .ThenInclude(op => op.Product)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
-            return _mapper.Map<OrderDto>(orderEntity);
+            if (orderEntity == null)
+                return null;
+
+            var orderDto = _mapper.Map<OrderDto>(orderEntity);
+            
+            foreach (var orderProduct in orderDto.Products)
+            {
+                var product = orderEntity.OrderProducts
+                    .FirstOrDefault(op => op.ProductId == orderProduct.ProductId)?.Product;
+
+                if (product != null)
+                {
+                    orderProduct.ProductName = product.Name;
+                }
+            }
+
+            var user = await _context.UserEntities.FindAsync(orderEntity.UserId);
+            orderDto.UserFirstName = user?.FirstName;
+
+            return orderDto;
         }
 
         public async Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(long userId)
@@ -48,7 +67,27 @@ namespace backend.Services
                 .ThenInclude(op => op.Product)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<OrderDto>>(orders);
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders);
+
+            foreach (var orderDto in orderDtos)
+            {
+                foreach (var orderProduct in orderDto.Products)
+                {
+                    var product = orders
+                        .SelectMany(o => o.OrderProducts)
+                        .FirstOrDefault(op => op.ProductId == orderProduct.ProductId)?.Product;
+
+                    if (product != null)
+                    {
+                        orderProduct.ProductName = product.Name;
+                    }
+                }
+
+                var user = await _context.UserEntities.FindAsync(orderDto.UserId);
+                orderDto.UserFirstName = user?.FirstName;
+            }
+
+            return orderDtos;
         }
 
         public async Task<OrdersWithCountResponse> GetAllOrdersAsync()
@@ -60,6 +99,24 @@ namespace backend.Services
 
             var orderDtos = _mapper.Map<List<OrderDto>>(orders);
 
+            foreach (var orderDto in orderDtos)
+            {
+                foreach (var orderProduct in orderDto.Products)
+                {
+                    var product = orders
+                        .SelectMany(o => o.OrderProducts)
+                        .FirstOrDefault(op => op.ProductId == orderProduct.ProductId)?.Product;
+
+                    if (product != null)
+                    {
+                        orderProduct.ProductName = product.Name;
+                    }
+                }
+
+                var user = await _context.UserEntities.FindAsync(orderDto.UserId);
+                orderDto.UserFirstName = user?.FirstName;
+            }
+
             return new OrdersWithCountResponse
             {
                 OrderCount = orderDtos.Count,
@@ -67,5 +124,54 @@ namespace backend.Services
             };
         }
 
+        public async Task<bool> MarkOrderAsDeliveredAsync(long orderId)
+        {
+            var order = await _context.OrderEntities.FindAsync(orderId);
+
+            if (order == null)
+                return false;
+
+            order.Delivered = true;
+            _context.OrderEntities.Update(order);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<SalesResponse> GetSalesAsync()
+        {
+            var deliveredOrders = await _context.OrderEntities
+                .Where(o => o.Delivered)
+                .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+                .ToListAsync();
+
+            var totalSales = deliveredOrders.Sum(o => o.OrderProducts.Sum(p => p.Quantity * p.Price));
+            var salesDtos = _mapper.Map<IEnumerable<OrderDto>>(deliveredOrders);
+
+            foreach (var salesDto in salesDtos)
+            {
+                foreach (var orderProduct in salesDto.Products)
+                {
+                    var product = deliveredOrders
+                        .SelectMany(o => o.OrderProducts)
+                        .FirstOrDefault(op => op.ProductId == orderProduct.ProductId)?.Product;
+
+                    if (product != null)
+                    {
+                        orderProduct.ProductName = product.Name;
+                    }
+                }
+
+                var user = await _context.UserEntities.FindAsync(salesDto.UserId);
+                salesDto.UserFirstName = user?.FirstName;
+            }
+
+            return new SalesResponse
+            {
+                Sales = salesDtos,
+                TotalSales = totalSales
+            };
+        }
     }
 }

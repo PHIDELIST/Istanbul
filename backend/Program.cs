@@ -9,6 +9,8 @@ using Swashbuckle.AspNetCore.Filters;
 using backend.Profiles;
 using backend.Interfaces;
 using System.Text.Json;
+using Microsoft.Extensions.FileProviders;
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
@@ -125,6 +127,11 @@ if (app.Environment.IsDevelopment())
 
     app.UseDeveloperExceptionPage();
 }
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(),"uploads")),
+    RequestPath = "/uploads"
+});
 
 app.UseHttpsRedirection();
 

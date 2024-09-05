@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
+import { backendUrl } from "../utils";
 
 export default function Login() {
     const history = useHistory();
@@ -27,7 +28,7 @@ export default function Login() {
         };
 
         try {
-            const response = await axios.post("http://localhost:5066/auth/login", userData, {
+            const response = await axios.post(`${backendUrl}/auth/login`, userData, {
                 headers: { "Content-Type": "application/json" },
             });
 
