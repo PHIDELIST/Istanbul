@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-
+import { backendUrl } from "../utils";
 export default function CustomerOrders({ color }) {
   const [orders, setOrders] = useState([]);
   const token = localStorage.getItem("token");
@@ -9,7 +9,7 @@ export default function CustomerOrders({ color }) {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("http://localhost:5066/api/Order/my-orders", {
+        const response = await axios.get(`${backendUrl}/api/Order/my-orders`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
