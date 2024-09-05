@@ -6,7 +6,6 @@ import NavbarMenu from "./components/NavbarMenu";
 import ViewProduct from "./pages/ViewProduct";
 import About from "./pages/About";
 import Checkout from "./pages/Checkout";
-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { CartWrapper } from "./components/CartContext";
@@ -16,7 +15,7 @@ import Contact from "./pages/Contact";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Admin from "./admin/layouts/Admin";
-
+import ProfilePage from "./pages/ProfilePage";
 const initialOptions = {
     "client-id": "test",
     "currency": "USD",
@@ -35,6 +34,7 @@ function App() {
                             <Switch>
                                 <Route exact path="/" component={Home} />
                                 <Route path="/about" component={About} />
+                                <Route path="/profile" component={ProfilePage} />
                                 <ProtectedRoute path="/checkout" component={Checkout} allowedRoles={["admin","user"]} />
                                 <Route path="/login" component={Login} />
                                 <Route path="/signup" component={Signup} />
