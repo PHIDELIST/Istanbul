@@ -6,9 +6,21 @@ export default function CardProfile() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Retrieve profile from local storage
-    const storedProfile = JSON.parse(localStorage.getItem("profile"));
-    setProfile(storedProfile);
+
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${backendUrl}/auth/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(response.data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        alert("Failed to fetch profile.");
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   const handleUpdateProfile = async () => {
