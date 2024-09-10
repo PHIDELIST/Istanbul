@@ -9,7 +9,7 @@ export default function CustomerOrders({ color }) {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/api/Order/my-orders`, {
+        const response = await axios.get(`${backendUrl}/api/Order/user-orders`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
