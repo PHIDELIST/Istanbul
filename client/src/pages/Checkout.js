@@ -1,26 +1,22 @@
 import React from "react";
 import { useCartContext } from "../components/CartContext";
-import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import axios from "axios";
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import { backendUrl } from "../utils";
 
 const Checkout = () => {
     const { cartItems } = useCartContext();
-    const [{ options, isPending }, dispatch] = usePayPalScriptReducer();
-    const [currency, setCurrency] = React.useState(options.currency || "USD");
     const [error, setError] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
 
-    const getAuthToken = () => {
-        return localStorage.getItem("token"); 
-    };
+    const getAuthToken = () => localStorage.getItem("token");
 
     const getUserIdFromToken = () => {
         const token = getAuthToken();
         if (token) {
             try {
                 const decodedToken = jwtDecode(token);
-                return decodedToken.Id; 
+                return decodedToken.Id;
             } catch (e) {
                 console.error("Error decoding token:", e);
                 return null;
@@ -35,76 +31,35 @@ const Checkout = () => {
             .toFixed(2);
     };
 
-    const onCurrencyChange = ({ target: { value } }) => {
-        setCurrency(value);
-        dispatch({
-            type: "resetOptions",
-            value: {
-                ...options,
-                currency: value,
-            },
-        });
-    };
-
-    const createOrderInBackend = async (orderData) => {
+    const initiateMpesaTransaction = async () => {
         try {
-            const authToken = getAuthToken();
-            const response = await axios.post(
-                `${backendUrl}/api/Order`,
-                orderData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                }
-            );
-            return response.data;
-        } catch (error) {
-            setError("Failed to create order.");
-            console.error("Error creating order:", error);
-            throw error;
-        }
-    };
+            setLoading(true);
+            const totalAmount = calculateTotal();
+            const phoneNumber = prompt("Enter your MPesa phone number:");
 
-    const onCreateOrder = (data, actions) => {
-        return actions.order.create({
-            purchase_units: [
-                {
-                    amount: {
-                        value: calculateTotal(),
-                    },
-                },
-            ],
-        });
-    };
-
-    const onApproveOrder = async (data, actions) => {
-        try {
-            const details = await actions.order.capture();
-            const name = details.payer.name.given_name;
-            alert(`Transaction completed by ${name}`);
-
-            const userId = getUserIdFromToken();
-            if (!userId) {
-                throw new Error("User not authenticated");
+            if (!phoneNumber) {
+                alert("Phone number is required for payment.");
+                return;
             }
-
-            const orderData = {
-                orderDate: new Date().toISOString(),
-                userId: userId,
-                products: cartItems.map(item => ({
-                    productId: item.id,
-                    quantity: item.quantity,
-                    price: item.price
-                })),
-            };
-
-            await createOrderInBackend(orderData);
-            alert("Order placed successfully.");
+            const token = localStorage.getItem("token");
+            const reference = `Order-${Date.now()}`; // Unique order reference
+            const payload =  {
+                phoneNumber,
+                amount: totalAmount,
+                reference,
+            }
+            // Call the API to initiate the MPesa transaction
+            const response = await axios.post(
+                `${backendUrl}/api/Mpesa/initiate`,payload,
+                {headers: {Authorization: `Bearer ${token}`}}
+            );
+            console.log(response);
+            alert(response.data || "Transaction initiated. Check your phone.");
         } catch (error) {
-            setError("Failed to process payment.");
-            console.error("Error approving order:", error);
-            alert("Failed to process payment.");
+            setError("Failed to initiate MPesa payment.");
+            console.error("Error:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -140,26 +95,16 @@ const Checkout = () => {
                 <p className="text-xl font-bold">Total: ${calculateTotal()}</p>
             </div>
 
-            {/* Currency Selection */}
-            <div className="mb-4">
-                <select value={currency} onChange={onCurrencyChange} className="p-2 border rounded">
-                    <option value="USD">💵 USD</option>
-                    <option value="EUR">💶 Euro</option>
-                </select>
-            </div>
+            {/* MPesa Payment Button */}
+            <button
+                onClick={initiateMpesaTransaction}
+                disabled={loading}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+                {loading ? "Processing..." : "Pay with MPesa"}
+            </button>
 
-            {/* Payment Buttons */}
-            <div className="paypal">
-                {isPending ? (
-                    <p>LOADING...</p>
-                ) : (
-                    <PayPalButtons
-                        style={{ layout: "vertical" }}
-                        createOrder={(data, actions) => onCreateOrder(data, actions)}
-                        onApprove={(data, actions) => onApproveOrder(data, actions)}
-                    />
-                )}
-            </div>
+            {error && <p className="text-red-500 mt-4">{error}</p>}
         </div>
     );
 };
